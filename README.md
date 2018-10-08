@@ -6,11 +6,11 @@ An elm library for interactive maps.
 It's very simple to get create a map with this library
 
 ```elm
-    import Maps
-    import Html exposing (program)
+	import Browser
+	import Maps
 
-    main = program
-		{ init = (Maps.defaultModel, Cmd.none)
+	main = Browser.element
+		{ init = (\() -> (Maps.defaultModel, Cmd.none))
 		, subscriptions = Maps.subscriptions
 		, update = Maps.update
 		, view = Maps.view

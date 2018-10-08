@@ -1,8 +1,6 @@
 module Example exposing (..)
 
-import Html
 import Browser
-
 import Maps
 
 main = Browser.element
