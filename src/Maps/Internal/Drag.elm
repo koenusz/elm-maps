@@ -10,7 +10,7 @@ module Maps.Internal.Drag exposing
 import Json.Decode as Json
 
 import Html
-import Html.Events exposing (on, onWithOptions, defaultOptions, onMouseUp)
+import Html.Events exposing (on, onMouseUp)
 
 import Maps.Internal.Screen as Screen
 
@@ -28,25 +28,25 @@ start : Screen.Offset -> Drag
 start = StartDrag
 
 drag : Screen.Offset -> Drag -> Drag
-drag offset state =
+drag thisoffset state =
   case state of
-    StartDrag start -> Drag start offset
-    Drag start end -> Drag end offset
+    StartDrag thisstart -> Drag thisstart thisoffset
+    Drag thisstart thisend -> Drag thisend thisoffset
 
 offset : Drag -> Screen.Offset
-offset drag =
-  case drag of
+offset thisdrag =
+  case thisdrag of
     StartDrag _ ->
       { x = 0, y = 0 }
-    Drag start end ->
-      { x = end.x - start.x, y = end.y - start.y }
+    Drag thisstart thisend ->
+      { x = thisend.x - thisstart.x, y = thisend.y - thisstart.y }
 
 events : EventOptions msg -> Maybe Drag -> List (Html.Attribute msg)
-events ({dragStart, dragTo, dragStop}) drag =
+events ({dragStart, dragTo, dragStop}) thisdrag =
   [ -- Mouse
-    if drag == Nothing then
-      onWithOptions "mousedown"
-      { defaultOptions | preventDefault = True }
+    if thisdrag == Nothing then
+      Html.Events.preventDefaultOn "mousedown"
+      <| Json.map2 (\b a -> (a,b)) (Json.succeed True)
       <| Json.map dragStart
       <| Screen.decodeOffset
     else
@@ -56,18 +56,18 @@ events ({dragStart, dragTo, dragStop}) drag =
   , -- Mouse
     onMouseUp dragStop
   , -- Mobile
-    if drag == Nothing then
-      onWithOptions "touchstart"
-      { defaultOptions | preventDefault = True }
+    if thisdrag == Nothing then
+      Html.Events.preventDefaultOn "touchstart"
+      <| Json.map2 (\b a -> (a,b)) (Json.succeed True)
       <| Json.map dragStart
       <| Screen.decodeOffset
     else
-      onWithOptions "touchmove"
-      { defaultOptions | preventDefault = True }
+      Html.Events.preventDefaultOn "touchmove"
+      <| Json.map2 (\b a -> (a,b)) (Json.succeed True)
       <| Json.map dragTo
       <| Screen.decodeOffset
   , -- Mobile
-    onWithOptions "touchend"
-    { defaultOptions | preventDefault = True }
+    Html.Events.preventDefaultOn "touchend"
+    <| Json.map2 (\b a -> (a,b)) (Json.succeed True)
     <| Json.succeed dragStop
   ]

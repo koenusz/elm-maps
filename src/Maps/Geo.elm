@@ -73,8 +73,8 @@ For example, zoomed into the streets of Baku, Azerbaijan:
         (latLng 40.409264 49.867092)
 -}
 centeredBounds : Float -> LatLng -> Bounds
-centeredBounds zoom latLng =
+centeredBounds zoom thislatLng =
   Bounds.Centered
     { zoom = zoom
-    , center = latLng
+    , center = thislatLng
     }

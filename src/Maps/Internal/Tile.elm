@@ -7,7 +7,7 @@ module Maps.Internal.Tile exposing
   , view
   )
 
-import Regex exposing (HowMany(..), regex)
+import Regex
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -52,19 +52,24 @@ toLatLng zoom tileX tileY =
 
 formatInt : String -> Int -> String -> String
 formatInt replace number =
-  Regex.replace All (regex replace) (\_ -> toString number)
+  let
+    attemptedRegex = Regex.fromString replace
+  in
+    case attemptedRegex of
+      Just regex ->
+        Regex.replace regex (\_ -> String.fromInt number)
+      Nothing ->
+        identity
 
 view : Float -> Tile -> Html msg
-view tileSize (url, offset) =
+view tileSize (thisUrl, offset) =
   Html.img
-    [ Attr.src url
-    , Attr.style
-      [ ("position", "absolute")
-      , ("left", toString offset.x ++ "px")
-      , ("top", toString offset.y ++ "px")
-      , ("width", toString tileSize ++ "px")
-      , ("height", toString tileSize ++ "px")
-      , ("background-color", "rgba(0,0,0, 0)")
-      ]
+    [ Attr.src thisUrl
+    , Attr.style "position" "absolute"
+    , Attr.style "left" <| String.fromFloat offset.x ++ "px"
+    , Attr.style "top" <| String.fromFloat offset.y ++ "px"
+    , Attr.style "width" <| String.fromFloat tileSize ++ "px"
+    , Attr.style "height" <| String.fromFloat tileSize ++ "px"
+    , Attr.style "background-color" <| "rgba(0,0,0, 0)"
     ]
     []

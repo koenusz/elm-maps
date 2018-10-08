@@ -39,10 +39,10 @@ import List.Extra as List
 
 import Json.Decode as Json
 
-import Html exposing (Html, program)
+import Html exposing (Html)
 import Html.Keyed
 import Html.Attributes as Attr
-import Html.Events exposing (onWithOptions)
+import Html.Events
 
 import Maps.Internal.Map as Map exposing (Map)
 import Maps.Internal.Screen as Screen exposing (Offset, TwoFingers, ZoomLevel)
@@ -52,6 +52,7 @@ import Maps.Internal.Marker as Marker exposing (Marker)
 import Maps.Internal.Tile as Tile exposing (Tile)
 import Maps.Internal.Drag as Drag exposing (Drag)
 import Maps.Internal.Pinch as Pinch exposing (Pinch)
+import Maps.Internal.Utils exposing (flip)
 import Maps.Internal.Zoom as Zoom
 
 {-| The map has events for dragging, zooming and setting the bounds displayed by the map.
@@ -79,16 +80,16 @@ type alias Model msg =
   }
 
 updateMap : (Map -> Map) -> Model msg -> Model msg
-updateMap update model =
+updateMap thisupdate model =
   { model
-  | map = update model.map
+  | map = thisupdate model.map
   , cache = model.map :: model.cache |> List.uniqueBy (.zoom >> ceiling)
   }
 
 updateMarkers : (List (Marker msg) -> List (Marker msg)) -> Model msg -> Model msg
-updateMarkers update model =
+updateMarkers thisupdate model =
   { model
-  | markers = update model.markers
+  | markers = thisupdate model.markers
   }
 
 {-| A default model that displays Open Street Map tiles looking at Sydney.
@@ -149,13 +150,13 @@ update msg model =
         zoom = Maybe.map (Zoom.fromPinch model.map.width model.map.height) model.pinch
         pinchedMap map =
           case zoom of
-            Just (zoom, offset) -> Map.zoomTo zoom offset map
+            Just (thiszoom, offset) -> Map.zoomTo thiszoom offset map
             Nothing -> map
       in
         (updateMap pinchedMap { model | pinch = Nothing }, Cmd.none)
     Zoom offset zoom ->
       (updateMap (Map.zoomTo zoom offset) model, Cmd.none)
-    ExternalMsg msg ->
+    ExternalMsg othermsg ->
       (model, Cmd.none)
 
 {-| -}
@@ -167,9 +168,9 @@ subscriptions map =
 view : Model msg -> Html (Msg msg)
 view ({map, cache, markers, pinch, drag} as model) =
   Html.div
-    ([ Attr.style
-      [ ("width", toString map.width ++ "px")
-      , ("height", toString map.height ++ "px")
+    (( List.map (\(p,v) -> Attr.style p v)
+      [ ("width", String.fromFloat map.width ++ "px")
+      , ("height", String.fromFloat map.height ++ "px")
       , ("-webkit-touch-callout", "none")
       , ("-webkit-user-select", "none")
       , ("-khtml-user-select", "none")
@@ -178,49 +179,46 @@ view ({map, cache, markers, pinch, drag} as model) =
       , ("user-select", "none")
       , ("background-color", "#ddd")
       ]
-    ]
-    ++ zoomEvents map.zoom
+     ) ++ zoomEvents map.zoom
     )
     <|
     let
       zoom = Maybe.map (Zoom.fromPinch map.width map.height) pinch
-      zoomedMap = Maybe.withDefault map <| Maybe.map (\(zoom, offset) -> Map.zoomTo zoom offset map) zoom
+      zoomedMap = Maybe.withDefault map <| Maybe.map (\(thiszoom, offset) -> Map.zoomTo thiszoom offset map) zoom
       transforms = Map.diff zoomedMap map
     in
       [ Html.div
-        [ Attr.style
-          [ ("position", "absolute")
-          , ("width", toString map.width ++ "px")
-          , ("height", toString map.height ++ "px")
-          , ("overflow", "hidden")
-          ]
-        , onWithOptions "mouseDown"
-          { preventDefault = True, stopPropagation = False }
+        [ Attr.style "position" "absolute"
+        , Attr.style "width" <| String.fromFloat map.width ++ "px"
+        , Attr.style "height" <| String.fromFloat map.height ++ "px"
+        , Attr.style "overflow" "hidden"
+        , Html.Events.custom "mouseDown"
+          <| Json.map (\v -> { message = v, preventDefault = True, stopPropagation = False })
           <| Json.fail "No interaction"
         ]
         <| List.map (\cachedMap -> tilesView (Map.diff zoomedMap cachedMap) cachedMap)
         <| List.reverse
         <| cache
       , Html.div
-        ([ Attr.style
+        (( List.map (\(p,v) -> Attr.style p v)
           [ ("position", "absolute")
-          , ("width", toString map.width ++ "px")
-          , ("height", toString map.height ++ "px")
+          , ("width", String.fromFloat map.width ++ "px")
+          , ("height", String.fromFloat map.height ++ "px")
           , ("overflow", "hidden")
           ]
-        ] ++ dragEvents drag
+         ) ++ dragEvents drag
         )
         [ tilesView transforms map
         ]
       , Html.div
-        [ Attr.style
+        ( List.map (\(p,v) -> Attr.style p v)
           [ ("position", "absolute")
-          , ("width", toString map.width ++ "px")
-          , ("height", toString map.height ++ "px")
+          , ("width", String.fromFloat map.width ++ "px")
+          , ("height", String.fromFloat map.height ++ "px")
           , ("overflow", "hidden")
           , ("pointer-events", "none")
           ]
-        ]
+        )
         <| List.map (Html.map ExternalMsg)
         <| List.map (Marker.view zoomedMap)
         <| markers
@@ -233,14 +231,14 @@ mapView wrapMsg html =
     mapMsg mapsMsg =
       case mapsMsg of
         ExternalMsg msg -> msg
-        mapsMsg -> wrapMsg mapsMsg
+        thismapsMsg -> wrapMsg thismapsMsg
   in
     Html.map mapMsg html
 
 tilesView : List Map.Transformation -> Map -> Html (Msg msg)
 tilesView transforms map =
   Html.Keyed.node "div"
-    [ Attr.style <| Map.transformationStyle map.width map.height <| transforms ]
+    ( List.map (\(p,v) -> Attr.style p v) <| Map.transformationStyle map.width map.height <| transforms )
     <| List.map (\((url, offset) as tile) -> (url, Tile.view map.tileSize tile))
     <| Map.tiles map
 

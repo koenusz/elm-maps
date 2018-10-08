@@ -17,11 +17,11 @@ start = StartPinch
 pinch : TwoFingers -> Pinch -> Pinch
 pinch twoFingers state =
   case state of
-    StartPinch start -> Pinch start twoFingers
-    Pinch start end -> Pinch start twoFingers
+    StartPinch thisstart -> Pinch thisstart twoFingers
+    Pinch thisstart end -> Pinch thisstart twoFingers
 
 startEnd : Pinch -> (TwoFingers, TwoFingers)
-startEnd pinch =
-  case pinch of
-    StartPinch start -> (start, start)
-    Pinch start end -> (start, end)
+startEnd thispinch =
+  case thispinch of
+    StartPinch thisstart -> (thisstart, thisstart)
+    Pinch thisstart end -> (thisstart, end)

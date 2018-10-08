@@ -12,7 +12,7 @@ import Maps.Internal.LatLng exposing (LatLng)
 import Maps.Internal.Screen exposing (Offset)
 
 equalMap : Float -> Map -> Map -> Expectation
-equalMap delta mapA mapB =
+equalMap delta mapAs mapBs =
   Expect.all
     [ \(mapA, mapB) -> Expect.equal mapA.tileServer mapB.tileServer
     , \(mapA, mapB) -> Expect.equal mapA.zoom mapB.zoom
@@ -21,7 +21,7 @@ equalMap delta mapA mapB =
     , \(mapA, mapB) -> Expect.equal mapA.height mapB.height
     , \(mapA, mapB) -> Expect.equal mapA.tileSize mapB.tileSize
     ]
-    (mapA, mapB)
+    (mapAs, mapBs)
 
 equalLatLng : Float -> LatLng -> LatLng -> Expectation
 equalLatLng delta latLngA latLngB =
@@ -30,9 +30,13 @@ equalLatLng delta latLngA latLngB =
     lngDiff = abs <| (latLngA.lng |> wrap -180 180) - (latLngB.lng |> wrap -180 180)
   in
     Expect.true
-    ("Expected the two offsets to be within "++toString delta++"\n"
-    ++ toString latLngA ++ "\n" ++ toString latLngB)
+    ("Expected the two offsets to be within "++String.fromFloat delta++"\n"
+    ++ latLngToString latLngA ++ "\n" ++ latLngToString latLngB)
     <| latDiff < delta && lngDiff < delta
+
+latLngToString : LatLng -> String
+latLngToString {lat,lng} =
+  "{ lat = "++String.fromFloat lat++", lng = "++String.fromFloat lng++" }"
 
 equalOffsets : Float -> Offset -> Offset -> Expectation
 equalOffsets delta offsetA offsetB =
@@ -41,6 +45,10 @@ equalOffsets delta offsetA offsetB =
     yDiff = abs <| offsetA.y - offsetB.y
   in
     Expect.true
-    ("Expected the two offsets to be within "++toString delta++"\n"
-    ++ toString offsetA ++ "\n" ++ toString offsetB)
+    ("Expected the two offsets to be within "++String.fromFloat delta++"\n"
+    ++ offsetToString offsetA ++ "\n" ++ offsetToString offsetB)
     <| xDiff < delta && yDiff < delta
+
+offsetToString : Offset -> String
+offsetToString {x,y} =
+  "{ x = "++String.fromFloat x++", y = "++String.fromFloat y++" }"

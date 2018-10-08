@@ -2,6 +2,7 @@ module Maps.Internal.Utils exposing
   ( wrap
   , sinh
   , cartesianMap
+  , flip
   )
 
 wrap min max n =
@@ -14,6 +15,11 @@ wrap min max n =
 
 sinh x =
   ((e ^ x) - (e ^ -x)) / 2
+
+flip : (a -> b -> c) -> (b -> a -> c)
+flip f b a =
+  f a b
+
 
 cartesianMap : (a -> b -> c) -> List a -> List b -> List (List c)
 cartesianMap function rows columns =

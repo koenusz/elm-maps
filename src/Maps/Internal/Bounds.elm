@@ -39,9 +39,9 @@ Note that the size of the tiles and map are needed to calculate the zoom level.
 zoom : Float -> Float -> Float -> Bounds -> ZoomLevel
 zoom tileSize mapWidth mapHeight bounds =
   case bounds of
-    Bounds bounds ->
+    Bounds thesebounds ->
       let
-        (ne, sw) = (bounds.northEast, bounds.southWest)
+        (ne, sw) = (thesebounds.northEast, thesebounds.southWest)
         -- The following assumes a Mercator projection
         -- See https://en.wikipedia.org/wiki/Mercator_projection#Alternative_expressions for details
         latY lat = sin (lat * pi / 180)
@@ -49,22 +49,22 @@ zoom tileSize mapWidth mapHeight bounds =
         latRad lat = (max (-pi) <| min (radX2 lat) pi) / 2
         latFraction = (latRad ne.lat) - (latRad sw.lat)
         lngFraction = ((ne.lng - sw.lng) |> wrap 0 360) / 360
-        zoom mapSize tileSize frac = logBase 2 (mapSize / tileSize / frac)
+        thiszoom mapSize thistileSize frac = logBase 2 (mapSize / thistileSize / frac)
       in
         min
-          (zoom mapWidth tileSize lngFraction)
-          (zoom mapHeight tileSize latFraction)
-    Centered bounds ->
-      bounds.zoom
+          (thiszoom mapWidth tileSize lngFraction)
+          (thiszoom mapHeight tileSize latFraction)
+    Centered thesebounds ->
+      thesebounds.zoom
 
 {-| Calculates the center point of a given Bounds.
 -}
 center : Bounds -> LatLng
 center bounds =
   case bounds of
-    Bounds bounds ->
-      { lat = (bounds.northEast.lat + bounds.southWest.lat) / 2
-      , lng = (bounds.northEast.lng + bounds.southWest.lng) / 2
+    Bounds thesebounds ->
+      { lat = (thesebounds.northEast.lat + thesebounds.southWest.lat) / 2
+      , lng = (thesebounds.northEast.lng + thesebounds.southWest.lng) / 2
       }
-    Centered bounds ->
-      bounds.center
+    Centered thesebounds ->
+      thesebounds.center

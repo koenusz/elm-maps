@@ -1,11 +1,12 @@
 module Example exposing (..)
 
-import Html exposing (program)
+import Html
+import Browser
 
 import Maps
 
-main = program
-  { init = (Maps.defaultModel, Cmd.none)
+main = Browser.element
+  { init = (\() -> (Maps.defaultModel, Cmd.none))
   , subscriptions = Maps.subscriptions
   , update = Maps.update
   , view = Maps.view

@@ -92,11 +92,11 @@ setTileSize tileSize map = { map | tileSize = tileSize }
 {-| Moves the map the number of pixels given by the offset.
 -}
 move : Screen.Offset -> Map -> Map
-move offset map =
+move thisoffset map =
   let
-    centerOffset offset = Screen.Offset (map.width/2 - offset.x) (map.height/2 - offset.y)
+    centerOffset otheroffset = Screen.Offset (map.width/2 - otheroffset.x) (map.height/2 - otheroffset.y)
   in
-    { map | center = Screen.offsetToLatLng map <| centerOffset offset }
+    { map | center = Screen.offsetToLatLng map <| centerOffset thisoffset }
 
 moveTo : LatLng -> Map -> Map
 moveTo latLng map =
@@ -127,9 +127,9 @@ zoomTo zoomLevel offset map =
 viewBounds : Bounds -> Map -> Map
 viewBounds bounds map =
   let
-    zoom = Bounds.zoom map.tileSize map.width map.height bounds
+    thiszoom = Bounds.zoom map.tileSize map.width map.height bounds
   in
-    { map | zoom = zoom, center = Bounds.center bounds }
+    { map | zoom = thiszoom, center = Bounds.center bounds }
 
 {-| Applies a drag (like a mouse drag) to the map
 -}
@@ -150,7 +150,7 @@ diff newMap oldMap =
       (Screen.offsetFromLatLng newMap oldMap.center)
       (Screen.offsetFromLatLng newMap newMap.center)
     , Scaled
-      <| (\zoom -> 2^zoom)
+      <| (\thiszoom -> 2^thiszoom)
       <| toFloat
       <| (-)
       (ceiling newMap.zoom)
@@ -190,14 +190,14 @@ transformationStyle mapWidth mapHeight transforms =
     transformations transform =
       case transform of
         Moved offset ->
-          "translate("++toString offset.x++"px, "++toString offset.y++"px)"
+          "translate("++String.fromFloat offset.x++"px, "++String.fromFloat offset.y++"px)"
         Scaled scale ->
-          "scale("++toString scale++")"
+          "scale("++String.fromFloat scale++")"
     style =
       transforms
       |> List.map transformations
       |> String.join " "
   in
-    [ ("transform-origin", toString (mapWidth/2)++"px "++toString (mapHeight/2)++"px")
+    [ ("transform-origin", String.fromFloat (mapWidth/2)++"px "++String.fromFloat (mapHeight/2)++"px")
     , ("transform", style)
     ]

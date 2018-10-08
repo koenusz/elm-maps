@@ -1,6 +1,8 @@
 module CustomMarkers exposing (..)
 
-import Html exposing (program)
+import Browser
+
+import Html
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 
@@ -30,8 +32,8 @@ type alias SportsGround =
   , kind : String
   }
 
-main = program
-  { init = init
+main = Browser.element
+  { init = (\() -> init)
   , update = update 
   , subscriptions = subscriptions
   , view = view
@@ -60,9 +62,9 @@ subscriptions model =
 
 update msg model =
   case msg of
-    MapsMsg msg ->
+    MapsMsg thismsg ->
       model.map
-        |> Maps.update msg
+        |> Maps.update thismsg
         |> Tuple.mapFirst (\map -> { model | map = map }) 
         |> Tuple.mapSecond (Cmd.map MapsMsg)
     Select ground ->
@@ -104,17 +106,17 @@ resultToSportsGrounds result =
 groundMarker : SportsGround -> Marker Msg
 groundMarker ground =
   let
-    view =
+    thisview =
       Html.span
-        [ onClick <| Select ground, Attr.style [("cursor", "pointer")] ]
+        [ onClick <| Select ground, Attr.style "cursor" "pointer" ]
         [ Html.text <| groundSymbol ground.kind ]
   in
-    Marker.createCustom view ground.latLng
+    Marker.createCustom thisview ground.latLng
 
 groundSymbol : String -> String
 groundSymbol kind =
   let
-    symbol (name, symbol) = if String.contains name kind then symbol else ""
+    symbol (name, thissymbol) = if String.contains name kind then thissymbol else ""
     default defaultString string = if String.isEmpty string then defaultString else string
   in
     [ ("Football", "🏉")

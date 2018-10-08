@@ -1,9 +1,12 @@
 module FullScreen exposing (..)
 
 import Task
-import Window
+import Browser.Dom
 
-import Html exposing (program)
+import Browser
+import Browser.Dom
+import Browser.Events
+import Html
 import Html.Events exposing (onInput)
 
 import Maps
@@ -11,10 +14,10 @@ import Maps.Map as Map
 
 type Msg
   = MapMsg (Maps.Msg ())
-  | Resize Window.Size
+  | Resize {width:Int,height:Int}
 
-main = program
-  { init = init
+main = Browser.element
+  { init = (\() -> init)
   , update = update
   , subscriptions = subscriptions
   , view = view
@@ -22,16 +25,16 @@ main = program
 
 init =
   ( Maps.defaultModel
-  , Task.attempt (Result.withDefault defaultSize >> Resize) Window.size
+  , Task.attempt (Result.map .scene >> Result.map (\s -> {width=floor s.width,height=floor s.height}) >> Result.withDefault defaultSize >> Resize) Browser.Dom.getViewport
   )
 
 defaultSize =
-  Window.Size 500 500
+  {width=500,height=500}
 
 update msg model =
   case msg of
-    MapMsg msg ->
-      Maps.update msg model
+    MapMsg thismsg ->
+      Maps.update thismsg model
       |> Tuple.mapSecond (Cmd.map MapMsg)
     Resize size ->
       ( model
@@ -43,7 +46,7 @@ update msg model =
 subscriptions model =
   Sub.batch
     [ Sub.map MapMsg <| Maps.subscriptions model
-    , Window.resizes Resize
+    , Browser.Events.onResize (\w h -> Resize {width=w,height=h})
     ]
 
 view model =

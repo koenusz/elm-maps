@@ -73,7 +73,7 @@ For example, set the width/height of a map and zoom into Seoul, South Korea:
 See [Maps.Map](./Maps-Map) for documentation of the Map functions.
 -}
 updateMap : (Map -> Map) -> Model msg -> Model msg
-updateMap update = opaqueModel <| Maps.updateMap <| transparentMap update
+updateMap thisupdate = opaqueModel <| Maps.updateMap <| transparentMap thisupdate
 
 {-| Change the markers inside of the model
 
@@ -98,7 +98,7 @@ For example, add markers for some Sydney attractions and then another marker for
 See [Maps.Marker](./Maps-Marker) for documentation of the Marker functions.
 -}
 updateMarkers : (List (Marker msg) -> List (Marker msg)) -> Model msg -> Model msg
-updateMarkers update = opaqueModel <| Maps.updateMarkers update
+updateMarkers thisupdate = opaqueModel <| Maps.updateMarkers thisupdate
 
 {-| The default model is a map zoomed into Sydney, Australia with no markers.
 -}

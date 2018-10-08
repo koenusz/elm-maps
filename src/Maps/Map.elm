@@ -126,7 +126,7 @@ For example, zoom into the top left corner of the map:
     |> zoom 1 { x = 0, y = 0}
 -}
 zoomTo : Float -> Screen.Offset -> Map -> Map
-zoomTo zoom offset = opaqueMap <| Map.zoomTo zoom offset
+zoomTo thiszoom offset = opaqueMap <| Map.zoomTo thiszoom offset
 
 {-| Move and zoom the map to cover given the bounds.
 

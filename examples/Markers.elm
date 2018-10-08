@@ -1,14 +1,15 @@
 module Markers exposing (..)
 
-import Html exposing (program)
+import Html
+import Browser
 
 import Maps
 import Maps.Geo
 import Maps.Map as Map
 import Maps.Marker as Marker
 
-main = program
-  { init = init
+main = Browser.element
+  { init = \() -> init
   , update = Maps.update 
   , subscriptions = Maps.subscriptions
   , view = Maps.view
@@ -25,7 +26,7 @@ init =
 sydney = Maps.Geo.latLng -33.865143 151.209900
 
 attractions =
-  List.map (uncurry Maps.Geo.latLng)
+  List.map (\(lat,lng) -> Maps.Geo.latLng lat lng)
     [ (-33.852324, 151.210819)
     , (-33.856872, 151.215239)
     , (-33.870397, 151.208835)

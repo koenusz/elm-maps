@@ -9,8 +9,7 @@ module Fuzzers exposing
 import Fuzz exposing (..)
 import Shrink
 
-import Random.Pcg as Random
-import Lazy.List exposing ((:::), empty)
+import Random
 
 import Maps.Internal.Screen as Screen exposing (ZoomLevel)
 import Maps.Internal.LatLng exposing (LatLng)
@@ -59,20 +58,24 @@ lng =
   signedRange -180 180
 
 signedRange min max = 
+  Fuzz.floatRange min max
+{--
+Old signedRange implementation
   Fuzz.custom
   (Random.float min max)
   (shrinkSignedRange min max)
+--}
 
 shrinkSignedRange min max val =
   if val == min || val == max || val == 0 then
-      empty
+      []
     else if val < min then
-      min ::: empty
+      min :: []
     else if val > max then
-      max ::: empty
-    else if floor val /= val || ceiling val /= val then
-      (toFloat <| floor val) ::: 0 ::: empty
+      max :: []
+    else if Basics.toFloat (floor val) /= val || Basics.toFloat (ceiling val) /= val then
+      (toFloat <| floor val) :: 0 :: []
     else if val < 0 then
-      (toFloat <| floor val // 2) ::: empty
+      (toFloat <| floor val // 2) :: []
     else
-      empty
+      []
