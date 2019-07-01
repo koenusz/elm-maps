@@ -53,3 +53,10 @@ create =
 createCustom : Html msg -> Maps.Geo.LatLng -> Marker msg
 createCustom =
     Marker.CustomMarker
+
+{-| Maps a marker to the lattitude/lonngitude .
+-}
+mapTolatLng: Marker msg -> Maps.Geo.LatLng
+mapTolatLng = 
+    Marker.mapTolatLng 
+
