@@ -1,6 +1,7 @@
 module Maps.Internal.Marker exposing
     ( Marker(..)
     , view
+    , mapTolatLng
     )
 
 import Html exposing (Html)
@@ -75,3 +76,4 @@ mapTolatLng marker =
 
         CustomMarker _ latlng ->
             latlng
+  

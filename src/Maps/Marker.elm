@@ -2,6 +2,7 @@ module Maps.Marker exposing
     ( Marker
     , create
     , createCustom
+    , mapTolatLng
     )
 
 {-| Markers are for displaying geographic locations on the map.
